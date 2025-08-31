@@ -26,8 +26,4 @@ jobs:
         with:
           projectKey: naveenaithal_account-management-fe
           organization: naveenaithal
-
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
-        
+          token: ${{ secrets.SONAR_TOKEN }}
