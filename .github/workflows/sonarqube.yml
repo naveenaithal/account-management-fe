@@ -27,5 +27,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
-          projectKey: ims
-          organization: jpmc
+          projectKey: naveenaithal_account-management-fe
+          organization: naveenaithal
