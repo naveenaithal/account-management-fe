@@ -12,7 +12,7 @@ export const validateEmail = (email) => {
   const trimmedEmail = email.trim();
   if (trimmedEmail === "") return false;
 
-  // Check for consecutive dots in local part
+  // Check  for consecutive dots in local part
   if (trimmedEmail.includes("..")) return false;
 
   // Split email into local and domain parts
