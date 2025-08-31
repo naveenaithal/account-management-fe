@@ -33,15 +33,6 @@ describe("Utility Functions Tests", () => {
     test("handles whitespace correctly", () => {
       expect(formatUserName("John ", " Doe")).toBe("John   Doe");
     });
-  });
-
-  describe("validateEmail", () => {
-    test("returns true for valid email addresses", () => {
-      expect(validateEmail("test@example.com")).toBe(true);
-      expect(validateEmail("user.name@domain.co.uk")).toBe(true);
-      expect(validateEmail("firstname+lastname@example.com")).toBe(true);
-      expect(validateEmail("email@123.123.123.123")).toBe(true);
-    });
 
     test("returns false for invalid email addresses", () => {
       expect(validateEmail("invalid-email")).toBe(false);

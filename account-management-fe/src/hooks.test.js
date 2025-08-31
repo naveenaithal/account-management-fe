@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { useCounter, useFetch, useLocalStorage } from "./hooks";
 
 describe("Custom Hooks Tests", () => {
@@ -110,25 +110,35 @@ describe("Custom Hooks Tests", () => {
 
     test("handles localStorage errors gracefully", () => {
       // Mock localStorage to throw an error
-      const originalSetItem = localStorage.setItem;
-      localStorage.setItem = jest.fn(() => {
+      const originalSetItem = window.localStorage.setItem;
+      const originalGetItem = window.localStorage.getItem;
+
+      window.localStorage.getItem = jest.fn(() => null);
+      window.localStorage.setItem = jest.fn(() => {
         throw new Error("Storage quota exceeded");
       });
 
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
 
       const { result } = renderHook(() =>
         useLocalStorage("test-key", "initial")
       );
 
-      act(() => {
-        result.current[1]("new value");
-      });
+      // This should not throw an error
+      expect(() => {
+        act(() => {
+          result.current[1]("new value");
+        });
+      }).not.toThrow();
 
-      expect(consoleSpy).toHaveBeenCalled();
+      // The component should still work even when localStorage fails
+      expect(result.current[0]).toBe("new value");
 
       // Restore original functions
-      localStorage.setItem = originalSetItem;
+      window.localStorage.setItem = originalSetItem;
+      window.localStorage.getItem = originalGetItem;
       consoleSpy.mockRestore();
     });
   });
@@ -143,10 +153,20 @@ describe("Custom Hooks Tests", () => {
     });
 
     test("initializes with correct default state", () => {
-      const { result } = renderHook(() => useFetch());
+      const { result } = renderHook(() =>
+        useFetch("https://api.example.com/data")
+      );
 
       expect(result.current.data).toBe(null);
       expect(result.current.loading).toBe(true);
+      expect(result.current.error).toBe(null);
+    });
+
+    test("initializes with loading false when no url provided", () => {
+      const { result } = renderHook(() => useFetch());
+
+      expect(result.current.data).toBe(null);
+      expect(result.current.loading).toBe(false);
       expect(result.current.error).toBe(null);
     });
 
@@ -157,30 +177,32 @@ describe("Custom Hooks Tests", () => {
         json: async () => mockData,
       });
 
-      const { result, waitForNextUpdate } = renderHook(() =>
+      const { result } = renderHook(() =>
         useFetch("https://api.example.com/data")
       );
 
       expect(result.current.loading).toBe(true);
 
-      await waitForNextUpdate();
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
 
       expect(result.current.data).toEqual(mockData);
-      expect(result.current.loading).toBe(false);
       expect(result.current.error).toBe(null);
     });
 
     test("handles fetch error", async () => {
       global.fetch.mockRejectedValueOnce(new Error("Network error"));
 
-      const { result, waitForNextUpdate } = renderHook(() =>
+      const { result } = renderHook(() =>
         useFetch("https://api.example.com/data")
       );
 
-      await waitForNextUpdate();
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
 
       expect(result.current.data).toBe(null);
-      expect(result.current.loading).toBe(false);
       expect(result.current.error).toBe("Network error");
     });
 
@@ -190,14 +212,15 @@ describe("Custom Hooks Tests", () => {
         status: 404,
       });
 
-      const { result, waitForNextUpdate } = renderHook(() =>
+      const { result } = renderHook(() =>
         useFetch("https://api.example.com/data")
       );
 
-      await waitForNextUpdate();
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
 
       expect(result.current.data).toBe(null);
-      expect(result.current.loading).toBe(false);
       expect(result.current.error).toBe("HTTP error! status: 404");
     });
 

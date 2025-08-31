@@ -51,9 +51,8 @@ describe("App Component Tests", () => {
   });
 
   test("app renders without crashing", () => {
-    const div = document.createElement("div");
-    render(<App />, { container: div });
-    expect(div).toBeInTheDocument();
+    const { container } = render(<App />);
+    expect(container.firstChild).toBeInTheDocument();
   });
 
   test("contains code element for file path", () => {
