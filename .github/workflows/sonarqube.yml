@@ -23,7 +23,10 @@ jobs:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectKey: naveenaithal_account-management-fe
-          organization: naveenaithal
-          token: ${{ secrets.SONAR_TOKEN }}
+          args: >
+            -Dsonar.projectKey=naveenaithal_account-management-fe
+            -Dsonar.organization=naveenaithal
+            -Dsonar.host.url=https://sonarcloud.io
